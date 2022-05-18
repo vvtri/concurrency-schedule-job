@@ -5,9 +5,6 @@ import { Job } from 'bull'
 export class TaskProcessor {
 	@Process()
 	async doSth(job: Job) {
-		console.log(
-			`processing job :>> in ${process.env.NAME}, job: `,
-			job.data.content
-		)
+		console.log(`processing job :>> in ${process.env.NAME}, job: `, job.data)
 	}
 }

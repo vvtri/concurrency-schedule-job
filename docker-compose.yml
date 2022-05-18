@@ -21,7 +21,7 @@ services:
       - redis
       - postgres
     ports:
-      - 4000:3000
+      - 4500:3000
     # volumes:
     #   - .:/app
     environment:
@@ -40,7 +40,7 @@ services:
       - redis
       - postgres
     ports:
-      - 4001:3000
+      - 4501:3000
     # volumes:
     #   - .:/app
     environment:

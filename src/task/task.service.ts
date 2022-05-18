@@ -30,10 +30,10 @@ export class TaskService {
 		console.log('cron run')
 		try {
 			await getManager().transaction(async (manager) => {
-				await manager.query('LOCK TABLE task IN ACCESS EXCLUSIVE MODE')
+				// await manager.query('LOCK TABLE task IN ACCESS EXCLUSIVE MODE')
 				const tasks = await manager
 					.createQueryBuilder(Task, 'task')
-					// .setLock('pessimistic_read')
+					.setLock('pessimistic_write')
 					.where('task.executesAt <= now()')
 					.getMany()
 				// Add task to bull
@@ -51,6 +51,22 @@ export class TaskService {
 				// Delete task
 				await manager.remove(tasks)
 			})
+			// const tasks = await this.taskRepo
+			// 	.createQueryBuilder('task')
+			// 	.setLock('pessimistic_read')
+			// 	.where('task.executesAt <= now()')
+			// 	.useTransaction(true)
+			// 	.getMany()
+
+			// console.log('process.env.NAME run in transaction :>> ', process.env.NAME)
+			// console.log('tasks :>> ', tasks)
+
+			// if (tasks.length < 1) {
+			// 	return
+			// }
+			// console.log('pass condition')
+			// this.taskQueue.addBulk([{ data: tasks }])
+			// Delete task
 		} catch (error) {
 			console.log(error)
 		}
