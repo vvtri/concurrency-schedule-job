@@ -1,0 +1,52 @@
+version: '2'
+services:
+  redis:
+    image: 'redis:7.0'
+    ports:
+      - '6379:6379'
+
+  postgres:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432:5432
+
+  node1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+      - postgres
+    ports:
+      - 4000:3000
+    # volumes:
+    #   - .:/app
+    environment:
+      - DB_HOST=postgres
+      - PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=postgres
+      - NAME=node1
+
+  node2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+      - postgres
+    ports:
+      - 4001:3000
+    # volumes:
+    #   - .:/app
+    environment:
+      - DB_HOST=postgres
+      - PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=postgres
+      - NAME=node2
