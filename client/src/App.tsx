@@ -32,14 +32,14 @@ export const App = () => {
 	const [messages, setMessages] = useState<Message[]>([])
 	const [currentRoom, setCurrentRoom] = useState('')
 	const [message, setMessage] = useState('')
+	const [roomInput, setRoomInput] = useState('')
 
 	useEffect(() => {
 		socket.on('newMessage', (jsonMsg: string) => {
-			console.log('newMessage :>> ', jsonMsg)
 			const msg = JSON.parse(jsonMsg) as Message
-			setMessages([...messages, msg])
+			setMessages((messages) => [...messages, msg])
 		})
-	})
+	}, [])
 
 	const handleLogin = (e: FormEvent) => {
 		e.preventDefault()
@@ -49,18 +49,30 @@ export const App = () => {
 	}
 
 	const handleChangeRoom = (room: string) => {
-		socket.emit('joinRoom', room, (data: string[]) => {
-			const mapData = data.map((item) => JSON.parse(item))
-			setMessages(mapData)
-		})
+		socket.emit(
+			'joinRoom',
+			{ newRoom: room, oldRoom: currentRoom },
+			(data: string[]) => {
+				const mapData = data.map((item) => JSON.parse(item))
+				setMessages(mapData)
+			}
+		)
 		setCurrentRoom(room)
 	}
 
 	const handleSendMsg = (e: FormEvent) => {
 		e.preventDefault()
-		socket.emit('messageToRoom', { text: message, email })
+		socket.emit('messageToRoom', { text: message, email, room: currentRoom })
 		setMessages([...messages, { message, email }])
 		setMessage('')
+	}
+
+	const handleJoinNewRoom = async (e: FormEvent) => {
+		e.preventDefault()
+		await fetch(`http://localhost:3001/messages/${email}/${roomInput}`)
+		alert(`join room ${roomInput} success`)
+		setRoomInput('')
+		setRooms((oldState) => [...oldState, roomInput])
 	}
 
 	return (
@@ -69,7 +81,23 @@ export const App = () => {
 				<Flex maxW='100%' minH='100vh'>
 					{/* Left panel */}
 					<Box bgColor='blue.300' w='30%' py='10' px='4'>
-						<Heading mb={8}>Room List</Heading>
+						<Heading mb='8' size='lg'>
+							Email: {email}
+						</Heading>
+						<form onSubmit={handleJoinNewRoom}>
+							<FormControl>
+								<FormLabel>Enter Room Name: </FormLabel>
+								<Input
+									type='text'
+									value={roomInput}
+									onChange={(e) => setRoomInput(e.target.value)}
+								/>
+							</FormControl>
+							<Button type='submit' colorScheme='blue'>
+								Join room
+							</Button>
+						</form>
+						<Heading my='6'>List room: </Heading>
 						<List spacing={4}>
 							{rooms.map((room) => (
 								<ListItem key={room}>
