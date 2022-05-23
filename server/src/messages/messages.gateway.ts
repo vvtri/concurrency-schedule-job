@@ -28,10 +28,12 @@ export class MessagesGateway {
 
 	@SubscribeMessage('joinRoom')
 	async joinRoom(
-		@MessageBody() roomName: string,
-		@ConnectedSocket() client: Socket
+		@MessageBody('newRoom') roomName: string,
+		@ConnectedSocket() client: Socket,
+		@MessageBody('oldRoom') oldRoom?: string,
 	) {
 		const messages = await this.messagesService.joinRooms(roomName)
+		if (oldRoom) client.leave(oldRoom)
 		client.join(roomName)
 		return messages
 	}
@@ -40,16 +42,13 @@ export class MessagesGateway {
 	async createMessage(
 		@MessageBody('text') text: string,
 		@MessageBody('email') email: string,
+		@MessageBody('room') room: string,
 		@ConnectedSocket() client: Socket
 	) {
-		const jsonMsg = await this.messagesService.createMessage(
-			text,
-			Array.from(client.rooms)[1],
-			email
-		)
-		console.log('Array.from(client.rooms)[1]', Array.from(client.rooms)[1])
-		client.to(Array.from(client.rooms)[1]).emit('newMessage', jsonMsg)
-    return jsonMsg
+		const jsonMsg = await this.messagesService.createMessage(text, room, email)
+		console.log('room', room)
+		client.to(room).emit('newMessage', jsonMsg)
+		return jsonMsg
 	}
 
 	// Soft delete

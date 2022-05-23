@@ -26,6 +26,10 @@ export class MessagesService {
 		return jsonMsg
 	}
 
+	async addRoom(email: string, room: string) {
+		await this.redis.lPush(email, room)
+	}
+
 	findOne(id: number) {
 		return `This action returns a #${id} message`
 	}
